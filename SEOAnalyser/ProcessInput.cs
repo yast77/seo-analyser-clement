@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
+using System;
 
 namespace SEOAnalyser
 {
@@ -57,42 +58,62 @@ namespace SEOAnalyser
 
         public static List<OccurrenceModel> GetNumberOfOccurrencePage(string inputString)
         {
-            var inputStringList = ConvertTextToStringList(inputString);
+            try
+            {
+                var inputStringList = ConvertTextToStringList(inputString);
 
+                return GetNumberOfOccurrenceList(inputStringList);
+            }
+            catch (InvalidOperationException ioe)
+            {
+                throw ioe;
+            }
 
-            return GetNumberOfOccurrenceList(inputStringList);
         }
 
         public static List<OccurrenceModel> GetExternalLinkList(string inputString)
         {
-            var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-            var lExternalList = linkParser.Matches(inputString).Cast<Match>().Select(m => m.Value).ToList();
-
-            return GetNumberOfOccurrenceList(lExternalList);
+            try
+            {
+                var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                var lExternalList = linkParser.Matches(inputString).Cast<Match>().Select(m => m.Value).ToList();
+                return GetNumberOfOccurrenceList(lExternalList);
+            }
+            catch (InvalidOperationException ioe)
+            {
+                throw ioe;
+            }
         }
 
         public static List<OccurrenceModel> GetNumberOfMetatagOccurrence(string downloadString)
         {
-            var inputString = ConvertHtmlToString(downloadString);
-            var inputStringList = ConvertTextToStringList(inputString.ToLower());
-
-            var lMetaTag = GetMetatagList(downloadString);
-
-            var lMetaTagPageWordMatch = lMetaTag.Where(x => inputStringList.Contains(x)).ToList();
-            var getNumberOfMetaTagOccurrence = GetNumberOfOccurrenceList(lMetaTagPageWordMatch);
-
-            //Add MetaTag Keyword that not exist in Occurence list
-            var oTempOccurrence = new OccurrenceModel();
-            foreach (var item in FilterStopWords(lMetaTag))
+            try
             {
-                if (getNumberOfMetaTagOccurrence.Where(x => x.OccurrenceWordOrLink.Contains(item)).Count() <= 0)
-                {
-                    oTempOccurrence = new OccurrenceModel() { OccurrenceWordOrLink = item, OccurrenceCount = 0 };
-                    getNumberOfMetaTagOccurrence.Add(oTempOccurrence);
-                }
-            }
+                var inputString = ConvertHtmlToString(downloadString);
+                var inputStringList = ConvertTextToStringList(inputString.ToLower());
 
-            return getNumberOfMetaTagOccurrence;
+                var lMetaTag = GetMetatagList(downloadString);
+
+                var lMetaTagPageWordMatch = lMetaTag.Where(x => inputStringList.Contains(x)).ToList();
+                var getNumberOfMetaTagOccurrence = GetNumberOfOccurrenceList(lMetaTagPageWordMatch);
+
+                //Add MetaTag Keyword that not exist in Occurence list
+                var oTempOccurrence = new OccurrenceModel();
+                foreach (var item in FilterStopWords(lMetaTag))
+                {
+                    if (getNumberOfMetaTagOccurrence.Where(x => x.OccurrenceWordOrLink.Contains(item)).Count() <= 0)
+                    {
+                        oTempOccurrence = new OccurrenceModel() { OccurrenceWordOrLink = item, OccurrenceCount = 0 };
+                        getNumberOfMetaTagOccurrence.Add(oTempOccurrence);
+                    }
+                }
+
+                return getNumberOfMetaTagOccurrence;
+            }
+            catch (InvalidOperationException ioe)
+            {
+                throw ioe;
+            }
         }
 
         private static List<string> GetMetatagList(string inputHtml)

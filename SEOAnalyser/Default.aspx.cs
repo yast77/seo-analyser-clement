@@ -50,6 +50,12 @@ namespace SEOAnalyser
                 lblResults.Text = string.Format("There is problem when access to remote server, please try again. Error message: {0}", we.Message);
                 return;
             }
+            catch (InvalidOperationException ioe)
+            {
+                lblResults.Visible = true;
+                lblResults.Text = string.Format("There is problem when process data, please try again. Error message: {0}", ioe.Message);
+                return;
+            }
             catch (Exception ex)
             {
                 lblResults.Visible = true;
